@@ -1,241 +1,451 @@
- <!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vidzora AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vidzora AI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#080812;color:#fff}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}.sidebar{
+width:250px;background:#10101c;border-right:1px solid #29293b;
+padding:22px 15px;position:fixed;left:0;top:0;bottom:0;
+transition:.3s;z-index:10
+}
+.logo{font-size:25px;font-weight:800;color:#8b7cff;padding:10px 12px 25px}
+.nav button{
+width:100%;background:none;border:0;color:#aaa;text-align:left;
+padding:14px 15px;border-radius:10px;margin:3px 0
+}
+.nav button:hover,.nav button.active{background:#25243b;color:#fff}
+.main{margin-left:250px;width:calc(100% - 250px);padding:25px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+.menuBtn{display:none;background:#191927;color:#fff;border:1px solid #333;padding:10px;border-radius:8px}
+.page{display:none}
+.page.active{display:block}
+h1{margin-top:0}
+.card{
+background:#11111e;border:1px solid #29293c;border-radius:16px;
+padding:20px;margin-bottom:18px
+}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.stat{font-size:28px;font-weight:bold;margin-top:8px}
+.muted{color:#9292a5}
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+textarea{
+width:100%;min-height:150px;background:#090914;color:#fff;
+border:1px solid #35354a;border-radius:12px;padding:15px;resize:vertical
+}
+select,input[type="text"]{
+width:100%;background:#090914;color:#fff;border:1px solid #35354a;
+border-radius:10px;padding:12px
+}
+label{display:block;margin:15px 0 7px;color:#c8c8d5}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.duration{
+display:grid;grid-template-columns:repeat(4,1fr);gap:8px
+}
+.duration button{
+background:#191927;color:#aaa;border:1px solid #333;padding:12px;border-radius:9px
+}
+.duration button.active{background:#6558ff;color:white;border-color:#8177ff}
+.generate{
+width:100%;padding:15px;border:0;border-radius:11px;
+background:linear-gradient(90deg,#6658ff,#9a5cff);color:#fff;
+font-weight:bold;font-size:16px;margin-top:20px
+}
+.upload{
+border:2px dashed #3a3952;border-radius:13px;padding:25px;text-align:center;
+color:#aaa
+}
+.preview{
+display:grid;grid-template-columns:repeat(3,1fr);gap:12px
+}
+.preview div{
+background:#1a1928;border-radius:12px;padding:35px 10px;text-align:center;color:#888
+}
+.plan{border:1px solid #333;border-radius:13px;padding:20px}
+.price{font-size:30px;font-weight:bold;color:#9b8cff}
+.danger{color:#ff6b6b}
+</style>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #080812;
-      color: white;
-    }
+</head><body>
+<div class="app"><aside class="sidebar" id="sidebar">
+<div class="logo">✦ Vidzora AI</div><div class="nav">
+<button class="active" onclick="showPage('overview',this)">🏠 Overview</button>
+<button onclick="showPage('studio',this)">🎬 Studio</button>
+<button onclick="showPage('gallery',this)">🖼️ Gallery</button>
+<button onclick="showPage('subscription',this)">💳 Subscription</button>
+<button onclick="showPage('upgrade',this)">⭐ Upgrade</button>
+<button onclick="showPage('account',this)">👤 Account</button>
+<button onclick="signOut()">🚪 Sign Out</button>
+</div>
+</aside><main class="main">
+<div class="topbar">
+<button class="menuBtn" onclick="toggleMenu()">☰</button>
+<div>
+<h1 id="pageTitle">Overview</h1>
+<span class="muted">AI Video Creation Studio</span>
+</div>
+</div><section id="overview" class="page active">
+<div class="grid">
+<div class="card">🎬 Videos Created<div class="stat">0</div></div>
+<div class="card">⏱️ Credits Used<div class="stat">0</div></div>
+<div class="card">⭐ Plan<div class="stat">Free</div></div>
+</div><div class="card">
+<h2>Welcome to Vidzora AI</h2>
+<p class="muted">Create cinematic AI videos with prompts, camera controls, duration and reference images.</p>
+<button class="generate" onclick="showPage('studio')">Create New Video</button>
+</div>
+</section><section id="studio" class="page">
+<div class="card">
+<h2>🎬 Video Studio</h2><label>Video Prompt</label>
 
-    header {
-      padding: 20px;
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      background: #111122;
-    }
+<textarea id="prompt" placeholder="Describe your scene, characters, camera movement, lighting, dialogue and action..."></textarea><label>Video Duration</label>
 
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
-    }
+<div class="duration" id="durations">
+<button class="active" onclick="durationSelect(this,'8 seconds')">8s</button>
+<button onclick="durationSelect(this,'15 seconds')">15s</button>
+<button onclick="durationSelect(this,'20 seconds')">20s</button>
+<button onclick="durationSelect(this,'25 seconds')">25s</button>
+<button onclick="durationSelect(this,'30 seconds')">30s</button>
+<button onclick="durationSelect(this,'1 minute')">1m</button>
+<button onclick="durationSelect(this,'5 minutes')">5m</button>
+<button onclick="customDuration()">Custom</button>
+</div><div class="row">
+<div>
+<label>Camera</label>
+<select id="camera">
+<option>Static Shot</option>
+<option>Close-up</option>
+<option>Extreme Close-up</option>
+<option>Wide Shot</option>
+<option>Pan Left</option>
+<option>Pan Right</option>
+<option>Tilt Up</option>
+<option>Tilt Down</option>
+<option>Dolly In</option>
+<option>Dolly Out</option>
+<option>Tracking Shot</option>
+<option>Orbit Shot</option>
+</select>
+</div><div>
+<label>Camera Duration</label>
+<select>
+<option>Entire Clip</option>
+<option>2 seconds</option>
+<option>4 seconds</option>
+<option>6 seconds</option>
+<option>8 seconds</option>
+</select>
+</div>
+</div><label>Reference Photos</label>
 
-    h1 {
-      text-align: center;
-      font-size: 40px;
-    }
+<div class="upload" onclick="document.getElementById('refs').click()">
+📸 Click to upload reference photos<br>
+<small>Character • Location • Object • Multiple Images</small>
+<input id="refs" type="file" accept="image/*" multiple hidden onchange="showFiles(this)">
+</div>
+<p id="fileInfo" class="muted"></p><div class="row">
+<div>
+<label>Aspect Ratio</label>
+<select>
+<option>16:9 Landscape</option>
+<option>9:16 Portrait</option>
+<option>1:1 Square</option>
+</select>
+</div><div>
+<label>Audio</label>
+<select>
+<option>Generate Audio</option>
+<option>Voice Over</option>
+<option>Sound Effects</option>
+<option>Background Music</option>
+<option>No Audio</option>
+</select>
+</div>
+</div><button class="generate" onclick="generateVideo()">✨ Generate Video</button>
 
-    p {
-      text-align: center;
-      color: #aaa;
-      line-height: 1.6;
-    }
+<p id="status" class="muted"></p>
+</div>
+</section><section id="gallery" class="page">
+<div class="card">
+<h2>🖼️ Gallery</h2>
+<div class="preview">
+<div>🎬 Video 01<br><small>Coming soon</small></div>
+<div>🎬 Video 02<br><small>Coming soon</small></div>
+<div>🎬 Video 03<br><small>Coming soon</small></div>
+</div>
+</div>
+</section><section id="subscription" class="page">
+<div class="card">
+<h2>💳 Subscription</h2>
+<div class="plan">
+<h3>Free Plan</h3>
+<div class="price">$0</div>
+<p class="muted">Basic AI video creation</p>
+<p>✓ Studio access</p>
+<p>✓ Reference photos</p>
+<p>✓ Multiple durations</p>
+</div>
+</div>
+</section><section id="upgrade" class="page">
+<div class="card">
+<h2>⭐ Upgrade to Pro</h2>
+<div class="plan">
+<h3>Vidzora Pro</h3>
+<div class="price">$—</div>
+<p>✓ Higher generation limits</p>
+<p>✓ Longer video durations</p>
+<p>✓ More reference images</p>
+<p>✓ Priority generation</p>
+<button class="generate" onclick="alert('Connect your payment system here.')">Upgrade Now</button>
+</div>
+</div>
+</section><section id="account" class="page">
+<div class="card">
+<h2>👤 Account</h2>
+<label>Name</label>
+<input type="text" placeholder="Your name">
+<label>Email</label>
+<input type="text" placeholder="Your email">
+<button class="generate" onclick="alert('Account settings saved.')">Save Changes</button>
+</div>
+</section></main>
+</div><script>
+let selectedDuration="8 seconds";
 
-    .box {
-      background: #121222;
-      padding: 25px;
-      border-radius: 18px;
-      margin-top: 30px;
-    }
+function showPage(id,btn){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
 
-    label {
-      display: block;
-      margin: 15px 0 8px;
-      font-weight: bold;
-    }
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+ if(btn) btn.classList.add('active');
 
-    textarea,
-    input,
-    select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: 1px solid #333;
-      background: #080812;
-      color: white;
-      font-size: 16px;
-    }
+ const titles={
+  overview:'Overview',
+  studio:'Studio',
+  gallery:'Gallery',
+  subscription:'Subscription',
+  upgrade:'Upgrade',
+  account:'Account'
+ };
+ document.getElementById('pageTitle').textContent=titles[id]||'Vidzora AI';
+ document.getElementById('sidebar').classList.remove('open');
+}
 
-    textarea {
-      height: 150px;
-      resize: vertical;
-    }
+function toggleMenu(){
+ document.getElementById('sidebar').classList.toggle('open');
+}
 
-    button {
-      width: 100%;
-      padding: 16px;
-      margin-top: 20px;
-      border: 0;
-      border-radius: 10px;
-      background: #6c4cff;
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+function durationSelect(btn,value){
+ document.querySelectorAll('#durations button').forEach(b=>b.classList.remove('active'));
+ btn.classList.add('active');
+ selectedDuration=value;
+}
 
-    button:hover {
-      opacity: 0.9;
-    }
+function customDuration(){
+ const value=prompt('Enter custom duration, for example 45 seconds:');
+ if(value){
+  selectedDuration=value;
+  document.querySelectorAll('#durations button').forEach(b=>b.classList.remove('active'));
+ }
+}
 
-    #generator {
-      display: none;
-    }
+function showFiles(input){
+ if(input.files.length){
+  document.getElementById('fileInfo').textContent=
+  input.files.length+' reference photo(s) selected.';
+ }
+}
 
-    #message {
-      text-align: center;
-      margin-top: 20px;
-      color: #9d8cff;
-    }
+function generateVideo(){
+ const promptText=document.getElementById('prompt').value.trim();
+ const status=document.getElementById('status');
 
-    .back {
-      background: #29293d;
-    }
-  </style>
-</head>
+ if(!promptText){
+  status.textContent='Please enter a video prompt first.';
+  return;
+ }
 
-<body>
+ status.textContent=
+ 'Generation request prepared — Duration: '+selectedDuration+
+ ', Camera: '+document.getElementById('camera').value+
+ '. Connect your AI video API to generate the actual video.';
+}
 
-  <header>
-    🎬 Vidzora AI
-  </header>
-
-  <div class="container">
-
-    <!-- HOME PAGE -->
-    <div id="home">
-      <h1>Create Videos With AI</h1>
-
-      <p>
-        Turn your ideas and characters into amazing AI videos.
-      </p>
-
-      <div class="box">
-        <button onclick="openGenerator()">
-          🚀 Start Creating
-        </button>
-      </div>
-    </div>
-
-
-    <!-- VIDEO GENERATOR PAGE -->
-    <div id="generator">
-
-      <h1>🎥 AI Video Generator</h1>
-
-      <p>
-        Create your video prompt and choose your settings.
-      </p>
-
-      <div class="box">
-
-        <label for="prompt">
-          📝 Video Prompt
-        </label>
-
-        <textarea
-          id="prompt"
-          placeholder="Write your story or video idea here..."
-        ></textarea>
-
-
-        <label for="character">
-          🎭 Character Reference
-        </label>
-
-        <input
-          type="text"
-          id="character"
-          placeholder="Example: Roman, Daran, Colin"
-        >
-
-
-        <label for="duration">
-          ⏱️ Video Duration
-        </label>
-
-        <select id="duration">
-          <option>15 Seconds</option>
-          <option>30 Seconds</option>
-          <option>1 Minute</option>
-          <option>5 Minutes</option>
-          <option>10 Minutes</option>
-          <option>30 Minutes</option>
-        </select>
-
-
-        <label for="style">
-          🎨 Video Style
-        </label>
-
-        <select id="style">
-          <option>Cinematic</option>
-          <option>Realistic</option>
-          <option>Fantasy</option>
-          <option>Anime</option>
-          <option>3D Animation</option>
-        </select>
-
-
-        <button onclick="generateVideo()">
-          🎬 Generate Video
-        </button>
-
-        <button class="back" onclick="goHome()">
-          ← Back
-        </button>
-
-        <div id="message"></div>
-
-      </div>
-    </div>
-
-  </div>
-
-
-  <script>
-    function openGenerator() {
-      document.getElementById("home").style.display = "none";
-      document.getElementById("generator").style.display = "block";
-    }
-
-    function goHome() {
-      document.getElementById("generator").style.display = "none";
-      document.getElementById("home").style.display = "block";
-      document.getElementById("message").innerText = "";
-    }
-
-    function generateVideo() {
-      const prompt = document.getElementById("prompt").value.trim();
-      const character = document.getElementById("character").value.trim();
-      const duration = document.getElementById("duration").value;
-      const style = document.getElementById("style").value;
-      const message = document.getElementById("message");
-
-      if (prompt === "") {
-        message.innerText = "⚠️ Please enter a video prompt first.";
-        return;
-      }
-
-      message.innerText =
-        "✅ Video request prepared! Duration: " +
-        duration +
-        " | Style: " +
-        style +
-        (character ? " | Character: " + character : "");
-    }
-  </script>
-
-</body>
+function signOut(){
+ alert('Sign-out action is ready. Connect your authentication system here.');
+}
+</script></body>
  </html>
+ <div class="pro-plans">  <div class="pro-plan">
+    <div class="plan-badge">WEEKLY</div>
+    <h2>Weekly Pro</h2>
+    <div class="price">
+      <span class="currency">$</span>
+      <input type="text" placeholder="Enter Price">
+      <span class="period">/ week</span>
+    </div><ul>
+  <li>✓ Pro Studio Access</li>
+  <li>✓ AI Video Generation</li>
+  <li>✓ Reference Photos</li>
+  <li>✓ 8s – 5min Duration</li>
+  <li>✓ Camera Controls</li>
+  <li>✓ HD Video Export</li>
+</ul>
+
+<button onclick="selectPlan('Weekly Pro')">
+  Upgrade Now
+</button>
+
+  </div>  <div class="pro-plan popular">
+    <div class="popular-badge">POPULAR</div>
+    <div class="plan-badge">MONTHLY</div>
+    <h2>Monthly Pro</h2><div class="price">
+  <span class="currency">$</span>
+  <input type="text" placeholder="Enter Price">
+  <span class="period">/ month</span>
+</div>
+
+<ul>
+  <li>✓ Pro Studio Access</li>
+  <li>✓ AI Video Generation</li>
+  <li>✓ Reference Photos</li>
+  <li>✓ 8s – 5min Duration</li>
+  <li>✓ Advanced Camera Controls</li>
+  <li>✓ HD Video Export</li>
+</ul>
+
+<button onclick="selectPlan('Monthly Pro')">
+  Upgrade Now
+</button>
+
+  </div>  <div class="pro-plan">
+    <div class="plan-badge">YEARLY</div>
+    <h2>Yearly Pro</h2><div class="price">
+  <span class="currency">$</span>
+  <input type="text" placeholder="Enter Price">
+  <span class="period">/ year</span>
+</div>
+
+<ul>
+  <li>✓ Pro Studio Access</li>
+  <li>✓ AI Video Generation</li>
+  <li>✓ Reference Photos</li>
+  <li>✓ 8s – 5min Duration</li>
+  <li>✓ Advanced Camera Controls</li>
+  <li>✓ HD Video Export</li>
+</ul>
+
+<button onclick="selectPlan('Yearly Pro')">
+  Upgrade Now
+</button>
+
+  </div></div><style>
+.pro-plans{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  margin-top:25px;
+}
+
+.pro-plan{
+  position:relative;
+  background:#11111e;
+  border:1px solid #303044;
+  border-radius:18px;
+  padding:25px;
+  text-align:center;
+  transition:.3s;
+}
+
+.pro-plan:hover{
+  transform:translateY(-5px);
+  border-color:#7568ff;
+}
+
+.pro-plan.popular{
+  border:2px solid #7568ff;
+}
+
+.plan-badge{
+  color:#9b8cff;
+  font-size:12px;
+  font-weight:bold;
+  letter-spacing:2px;
+}
+
+.pro-plan h2{
+  margin:12px 0;
+}
+
+.price{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:4px;
+  margin:20px 0;
+}
+
+.currency{
+  font-size:25px;
+}
+
+.price input{
+  width:110px;
+  background:#080812;
+  color:white;
+  border:1px solid #3a3950;
+  border-radius:8px;
+  padding:10px;
+  text-align:center;
+  font-size:20px;
+}
+
+.period{
+  color:#999;
+  font-size:13px;
+}
+
+.pro-plan ul{
+  list-style:none;
+  padding:0;
+  text-align:left;
+  line-height:2;
+  color:#c8c8d5;
+}
+
+.pro-plan button{
+  width:100%;
+  padding:13px;
+  border:0;
+  border-radius:10px;
+  background:linear-gradient(90deg,#6658ff,#9a5cff);
+  color:white;
+  font-weight:bold;
+}
+
+.popular-badge{
+  position:absolute;
+  top:-12px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#7568ff;
+  padding:5px 14px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:bold;
+}
+
+@media(max-width:800px){
+  .pro-plans{
+    grid-template-columns:1fr;
+  }
+}
+</style><script>
+function selectPlan(plan){
+  alert(plan + " selected. Connect your payment gateway here.");
+}
+</script>
