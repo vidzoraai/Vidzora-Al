@@ -1,189 +1,476 @@
-<!DOCTYPE html>
+const firebaseConfig = {
+  apiKey: "PASTE_FIREBASE_API_KEY",
+  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
+  projectId: "PASTE_PROJECT_ID",
+  storageBucket: "PASTE_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "PASTE_MESSAGING_SENDER_ID",
+  appId: "PASTE_FIREBASE_APP_ID"
+};
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
-<title>Vidzora AI — Video Studio</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Vidzora AI</title>
 <style>
-:root{--bg:#090909;--panel:#121212;--panel2:#181818;--text:#fff;--muted:#a7a7a7;--line:#2a2a2a;--accent:#fff;--accentText:#000;--danger:#ff5d5d}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
-body.light{--bg:#f5f5f5;--panel:#fff;--panel2:#eee;--text:#111;--muted:#666;--line:#d7d7d7;--accent:#111;--accentText:#fff}
-button,input,select,textarea{font:inherit}button{cursor:pointer}
-.app{display:none;min-height:100vh}.app.active{display:flex}
-.sidebar{width:270px;border-right:1px solid var(--line);background:var(--panel);padding:20px;position:fixed;inset:0 auto 0 0;overflow:auto}
-.logo{font-size:25px;font-weight:900;margin:5px 8px 28px}.logo span{font-weight:400}
-.navtitle{font-size:11px;color:var(--muted);letter-spacing:2px;margin:25px 8px 8px}
-.nav button{width:100%;background:transparent;color:var(--text);border:0;text-align:left;padding:13px 12px;border-radius:12px;margin:2px 0}
-.nav button:hover,.nav button.active{background:var(--panel2)}
-.profileMini{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:25px}
-.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accentText);font-weight:800;float:left;margin-right:10px}
-.main{margin-left:270px;width:calc(100% - 270px);padding:22px;min-width:0}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:16px}
-.iconbtn,.outline{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
-.primary{background:var(--accent);color:var(--accentText);border:0;border-radius:11px;padding:12px 18px;font-weight:800}
-.content{max-width:1200px;margin:0 auto}.page{display:none}.page.active{display:block}
-h1{font-size:clamp(28px,4vw,48px);margin:28px 0 8px}.sub{color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
-.stat{font-size:30px;font-weight:900;margin:8px 0}.small{font-size:13px;color:var(--muted)}
-.progress{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:var(--text);transition:.25s}
-label{display:block;font-size:13px;font-weight:700;margin:14px 0 7px}input,select,textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px}textarea{min-height:130px;resize:vertical}
-.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.tooltabs{display:flex;gap:8px;overflow:auto;padding:12px 0}.tooltabs button{white-space:nowrap}
-.drop{border:1px dashed #555;border-radius:13px;padding:22px;text-align:center;color:var(--muted);margin-top:10px}
-.refs{display:flex;gap:8px;flex-wrap:wrap}.ref{border:1px solid var(--line);border-radius:9px;padding:8px 10px}
-.render{margin-top:18px;display:none}.render.show{display:block}.renderHead{display:flex;justify-content:space-between}
-.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.media{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
-.thumb{height:150px;background:linear-gradient(135deg,#222,#090909);display:grid;place-items:center;font-size:42px}.media .info{padding:12px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.actions button{flex:1}
-.plan{border:1px solid var(--line);border-radius:15px;padding:18px}.plan h3{margin-top:0}.price{font-size:29px;font-weight:900}.check{color:var(--text);margin:7px 0}
-.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.modalbox{width:min(520px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;max-height:90vh;overflow:auto}
-.toast{position:fixed;right:18px;bottom:18px;background:var(--text);color:var(--accentText);padding:12px 16px;border-radius:10px;display:none;z-index:30}.toast.show{display:block}
-.mobilebar{display:none}
-@media(max-width:900px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:14px 14px 82px}.grid,.grid2,.gallery{grid-template-columns:1fr}.mobilebar{display:flex;position:fixed;z-index:15;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--line);padding:8px;justify-content:space-around}.mobilebar button{background:transparent;color:var(--text);border:0;font-size:12px}.topbar{position:sticky;top:0;background:var(--bg);z-index:10;padding-top:4px}}
-@media(min-width:901px){.mobilebar{display:none}}
-.auth{min-height:100vh;display:grid;place-items:center;padding:20px;background:var(--bg)}.authbox{width:min(480px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px}.authbox h1{font-size:34px}.center{text-align:center}.divider{display:flex;align-items:center;gap:10px;color:var(--muted);margin:18px 0}.divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}
-a{color:inherit}
+:root{--bg:#09090b;--p:#121216;--p2:#19191f;--t:#fff;--m:#9999a5;--b:#2b2b32;--a:#fff;--at:#000}
+body.light{--bg:#f5f5f7;--p:#fff;--p2:#eeeef2;--t:#111;--m:#666674;--b:#d8d8df;--a:#111;--at:#fff}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body.light{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--t);font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input,select,textarea{font:inherit;border-radius:12px}
+button{cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+.top{height:70px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:14px;padding:0 18px;position:sticky;top:0;background:var(--bg);z-index:5}
+.logo{font-size:24px;font-weight:900}
+.logo span{font-weight:400}
+.sp{flex:1}
+.btn{border:1px solid var(--b);background:var(--p);color:var(--t);padding:12px 16px;font-weight:700}
+.primary{border:0;background:var(--a);color:var(--at);padding:13px 18px;font-weight:800}
+.round{width:44px;height:44px;border-radius:50%;padding:0}
+.layout{display:flex;min-height:calc(100vh - 70px)}
+aside{width:260px;border-right:1px solid var(--b);padding:15px;position:sticky;top:70px;height:calc(100vh - 70px);overflow:auto}
+.nav{width:100%;text-align:left;border:1px solid transparent;background:transparent;color:var(--t);padding:13px;border-radius:12px;margin:2px 0}
+.nav.active,.nav:hover{background:var(--p2);border-color:var(--b)}
+.small{font-size:12px}
+.muted{color:var(--m)}
+.title{letter-spacing:2px;color:var(--m);font-size:11px;margin:20px 10px 7px}
+.profile{border:1px solid var(--b);background:var(--p);padding:13px;border-radius:14px;margin-top:18px}
+.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--a);color:var(--at);font-weight:900}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.main{flex:1;padding:25px}
+.page{max-width:1200px;margin:auto}
+.head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:18px}
+.head h1{margin:0;font-size:34px}
+.card{background:var(--p);border:1px solid var(--b);border-radius:18px;padding:18px}
+.grid{display:grid;gap:15px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.stat{font-size:28px;font-weight:900;margin-top:7px}
+label{font-weight:750;display:block;margin:10px 0 6px}
+input,select,textarea{width:100%;padding:13px;background:var(--bg);border:1px solid var(--b);color:var(--t)}
+textarea{min-height:140px}
+.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:15px;padding-bottom:4px}
+.tab{white-space:nowrap}
+.tab.on{background:var(--a);color:var(--at)}
+.studio{display:grid;grid-template-columns:1.4fr .6fr;gap:15px}
+.progress{height:10px;background:var(--p2);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--a);width:0;transition:width .25s}
+.refs{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:8px}
+.ref{aspect-ratio:1;position:relative;overflow:hidden;border:1px solid var(--b);border-radius:9px}
+.ref img{width:100%;height:100%;object-fit:cover}
+.ref button{position:absolute;right:2px;top:2px;border:0;background:#000;color:#fff;border-radius:50%}
+.gallery{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.thumb{aspect-ratio:16/9;background:#050505;display:grid;place-items:center;font-size:45px;border-radius:12px}
+.auth{min-height:100vh;display:grid;place-items:center;padding:20px}
+.authbox{width:min(540px,100%);background:var(--p);border:1px solid var(--b);border-radius:24px;padding:28px}
+.authbox h1{font-size:42px;line-height:1;margin:20px 0 10px}
+.divider{display:flex;align-items:center;gap:10px;color:var(--m);margin:16px 0}
+.divider:before,.divider:after{content:"";height:1px;background:var(--b);flex:1}
+.msg{padding:11px 13px;border:1px solid var(--b);border-radius:12px;background:var(--p2);margin:12px 0}
+.modal{position:fixed;inset:0;background:#000b;display:grid;place-items:center;padding:18px;z-index:20}
+.modal>div{width:min(620px,100%);max-height:90vh;overflow:auto;background:var(--p);border:1px solid var(--b);border-radius:18px;padding:20px}
+.hide{display:none!important}
+.notice{border-left:3px solid var(--t);padding:10px 13px;background:var(--p2);border-radius:8px}
+@media(max-width:900px){
+ aside{position:fixed;left:0;transform:translateX(-105%);z-index:10;background:var(--bg);width:280px;transition:.2s}
+ aside.open{transform:none}
+ .studio{grid-template-columns:1fr}
+ .g4{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+ .main{padding:15px}
+ .g4,.g3,.g2{grid-template-columns:1fr}
+ .head{flex-direction:column}
+ .head h1{font-size:29px}
+ .authbox h1{font-size:35px}
+ .hideMob{display:none}
+ .refs{grid-template-columns:repeat(3,1fr)}
+ .top{padding:0 12px}
+}
 </style>
 </head>
 <body>
+<div id="app"></div>
 
-<section id="auth" class="auth">
-  <div class="authbox">
-    <div class="logo">◢ Vidzora <span>AI</span></div>
-    <h1 id="authTitle">Welcome to Vidzora</h1>
-    <p class="sub">Create, render and manage your AI video projects.</p>
-    <form id="authForm">
-      <label>Email address</label><input id="authEmail" type="email" required placeholder="you@example.com">
-      <label>Password</label><input id="authPassword" type="password" required minlength="4" placeholder="••••••••">
-      <div style="text-align:right;margin:10px 0"><button type="button" class="iconbtn" onclick="forgot()">Forgot password?</button></div>
-      <button class="primary" style="width:100%">Log in</button>
-    </form>
-    <div class="divider">or continue with</div>
-    <button class="outline" style="width:100%" onclick="googleDemo()">◉ Continue with Google</button>
-    <p class="center" style="margin-top:20px">New to Vidzora? <button class="iconbtn" onclick="signup()">Create an account</button></p>
-    <div class="center" style="margin-top:18px"><button class="iconbtn" onclick="toggleTheme()">☼ Dark / Light</button></div>
-  </div>
-</section>
+<!-- Firebase Auth: no secret/private key belongs here. -->
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+  getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,
+  sendPasswordResetEmail,signInWithPopup,signInWithRedirect,getRedirectResult,
+  GoogleAuthProvider,signOut,updateProfile,updateEmail,updatePassword
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
-<section id="app" class="app">
-<aside class="sidebar">
-  <div class="logo">◢ Vidzora <span>AI</span></div>
-  <div class="nav">
-    <div class="navtitle">WORKSPACE</div>
-    <button onclick="showPage('overview',this)">◆ Overview</button>
-    <button class="active" onclick="showPage('studio',this)">✎ Studio</button>
-    <button onclick="showPage('gallery',this)">▤ My Gallery</button>
-    <div class="navtitle">ACCOUNT</div>
-    <button onclick="showPage('subscription',this)">Rs Subscription</button>
-    <button onclick="showPage('upgrade',this)">＋ Renew / Upgrade</button>
-    <button onclick="showPage('support',this)">? Support</button>
-    <button onclick="showPage('settings',this)">⚙ Settings</button>
-  </div>
-  <div class="profileMini"><div class="avatar" id="sideAvatar">V</div><b id="sideName">Vidzora Owner</b><br><span class="small" id="sideEmail">owner@vidzora.ai</span><div style="clear:both"></div></div>
-  <button class="outline" style="width:100%;margin-top:12px" onclick="logout()">⇥ Sign out</button>
-</aside>
+/* ==========================================================
+   1) PASTE YOUR FIREBASE WEB APP CONFIG HERE
+   Firebase Console -> Project settings -> Your apps -> Web app
+   ========================================================== */
+const firebaseConfig = {
+  apiKey: "PASTE_FIREBASE_API_KEY",
+  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
+  projectId: "PASTE_PROJECT_ID",
+  storageBucket: "PASTE_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "PASTE_MESSAGING_SENDER_ID",
+  appId: "PASTE_FIREBASE_APP_ID"
+};
 
-<main class="main">
-  <div class="topbar"><button class="iconbtn" onclick="toggleSidebar()">☰</button><div><b id="pageTitle">Studio</b><div class="small">Vidzora AI workspace</div></div><div class="row" style="justify-content:flex-end"><button class="iconbtn" onclick="toggleTheme()">☼</button><button class="primary" onclick="showPage('studio')">Open Studio</button></div></div>
-  <div class="content">
+/* Optional UI owner email. IMPORTANT:
+   This is NOT a secure admin permission. For production,
+   use Firebase Admin SDK + custom claims on your backend. */
+const OWNER_EMAIL = "YOUR_OWNER_GMAIL@gmail.com";
 
-    <section id="overview" class="page">
-      <h1>Welcome back.</h1><p class="sub">Your workspace, usage and recent renders.</p>
-      <div class="grid">
-        <div class="card"><div class="small">PLAN</div><div class="stat">Pro</div><div class="progress"><i style="width:45%"></i></div><p class="small">Owner mode: unlimited local usage</p></div>
-        <div class="card"><div class="small">VIDEOS TODAY</div><div class="stat" id="todayCount">0</div><p class="small">Your plan limits can be configured below.</p></div>
-        <div class="card"><div class="small">GALLERY ITEMS</div><div class="stat" id="galleryCount">0</div><p class="small">Saved in this browser demo.</p></div>
+const firebaseConfigured =
+  !firebaseConfig.apiKey.startsWith("PASTE_") &&
+  !firebaseConfig.projectId.startsWith("PASTE_") &&
+  !firebaseConfig.appId.startsWith("PASTE_");
+
+let appFirebase=null,auth=null;
+
+if(firebaseConfigured){
+  appFirebase=initializeApp(firebaseConfig);
+  auth=getAuth(appFirebase);
+  auth.useDeviceLanguage();
+
+  // If Google redirected back to this page, finish the login.
+  getRedirectResult(auth).catch(showAuthError);
+
+  onAuthStateChanged(auth,user=>{
+    if(user){
+      S.user=userToState(user);
+      save();
+      render();
+    }else{
+      S.user=null;
+      render();
+    }
+  });
+}else{
+  console.warn("Vidzora: Firebase config has not been filled in.");
+}
+
+/* ===================== APP DATA ===================== */
+const plans={
+ free:{pk:0,usd:0,q:{v8:3,v15:1,v20:0,v30:0,v60:0,v300:0,v900:0,v1800:0,img:10,voice:3,music:3}},
+ weekly:{pk:450,usd:1.6,q:{v8:100,v15:30,v20:0,v30:0,v60:0,v300:0,v900:0,v1800:0,img:200,voice:20,music:20}},
+ monthly:{pk:2500,usd:8.9,q:{v8:200,v15:80,v20:30,v30:50,v60:10,v300:2,v900:0,v1800:0,img:500,voice:50,music:50}},
+ yearly:{pk:14000,usd:49.9,q:{v8:1000,v15:500,v20:0,v30:1000,v60:200,v300:30,v900:50,v1800:10,img:2020,voice:-1,music:-1}}
+};
+const durations=[
+ ["8 seconds","v8"],["15 seconds","v15"],["20 seconds","v20"],["30 seconds","v30"],
+ ["1 minute","v60"],["5 minutes","v300"],["15 minutes","v900"],["30 minutes","v1800"]
+];
+const ratios=["9:16","16:9","1:1","4:5","4:3","3:2"];
+const modes=[
+ ["Text to AI Video","video"],["Image + Prompt Video","imgprompt"],["Image to Video","imgvideo"],
+ ["Music Generator","music"],["Voiceover Generator","voice"],["Image Generator","image"],
+ ["Thumbnail Generator","thumb"],["AI Story","story"]
+];
+
+let S={
+ user:null,page:"overview",theme:localStorage.vzTheme||"dark",mode:"video",
+ refs:[],media:JSON.parse(localStorage.vzMedia||"[]"),prog:0,authMode:"login",busy:false
+};
+
+document.body.className=S.theme==="light"?"light":"";
+
+const save=()=>{
+  localStorage.vzTheme=S.theme;
+  localStorage.vzMedia=JSON.stringify(S.media);
+};
+
+const userKey=()=>S.user?.uid||"guest";
+const owner=()=>!!S.user && (S.user.email||"").toLowerCase()===(OWNER_EMAIL||"").toLowerCase();
+const plan=()=>owner()?{pk:0,usd:0,q:Object.fromEntries(Object.keys(plans.free.q).map(k=>[k,-1]))}:plans[S.user?.plan||"free"];
+const used=k=>+(localStorage["vzU_"+userKey()+"_"+k]||0);
+const inc=k=>localStorage["vzU_"+userKey()+"_"+k]=used(k)+1;
+const q=x=>x<0?"∞":x;
+const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
+function userToState(user){
+  return {
+    uid:user.uid,email:user.email||"",name:user.displayName||((user.email||"User").split("@")[0]),
+    photoURL:user.photoURL||"",provider:user.providerData?.[0]?.providerId||"password",
+    plan:"free"
+  };
+}
+
+function showAuthError(error){
+  console.error(error);
+  const code=error?.code||"";
+  const map={
+    "auth/invalid-credential":"Email or password is incorrect.",
+    "auth/invalid-login-credentials":"Email or password is incorrect.",
+    "auth/user-not-found":"No account was found for this email.",
+    "auth/wrong-password":"Email or password is incorrect.",
+    "auth/email-already-in-use":"This email already has an account. Log in instead.",
+    "auth/weak-password":"Password is too weak.",
+    "auth/invalid-email":"Please enter a valid email address.",
+    "auth/popup-closed-by-user":"Google sign-in was cancelled.",
+    "auth/popup-blocked":"Your browser blocked the Google popup. Try again.",
+    "auth/unauthorized-domain":"This website domain is not authorized in Firebase.",
+    "auth/operation-not-allowed":"Enable this sign-in method in Firebase Authentication."
+  };
+  alert(map[code]||error?.message||"Authentication failed.");
+}
+
+function theme(){
+  S.theme=S.theme==="dark"?"light":"dark";
+  document.body.className=S.theme==="light"?"light":"";
+  save();render();
+}
+
+async function logout(){
+  if(!auth)return;
+  try{await signOut(auth)}catch(e){showAuthError(e)}
+}
+
+function go(p){
+  S.page=p;
+  document.querySelector("aside")?.classList.remove("open");
+  render();
+}
+
+/* ===================== AUTH ===================== */
+function auth(){
+  document.body.className=S.theme==="light"?"light":"";
+  const signup=S.authMode==="signup";
+  const configured=firebaseConfigured;
+
+  document.getElementById("app").innerHTML=`
+  <div class="auth">
+    <div class="authbox">
+      <div class="row">
+        <b class="logo">◢ Vidzora <span>AI</span></b>
+        <div class="sp"></div>
+        <button class="btn round" onclick="theme()" title="Dark / Light mode">${S.theme==="dark"?"☀":"☾"}</button>
       </div>
-    </section>
 
-    <section id="studio" class="page active">
-      <h1>Studio</h1><p class="sub">Choose a creation tool and configure your generation.</p>
-      <div class="tooltabs">
-        <button class="primary" onclick="tool('text')">Text to Video</button>
-        <button class="outline" onclick="tool('imageVideo')">Image + Prompt</button>
-        <button class="outline" onclick="tool('image')">Image Generator</button>
-        <button class="outline" onclick="tool('music')">Music Generator</button>
-        <button class="outline" onclick="tool('voice')">Voice Over</button>
-        <button class="outline" onclick="tool('thumb')">Thumbnail</button>
-        <button class="outline" onclick="tool('story')">AI Story</button>
+      <h1>${signup?"Welcome to Vidzora":"Welcome back."}</h1>
+      <p class="muted">Create, render and manage your AI video projects.</p>
+
+      ${!configured?`
+        <div class="msg">
+          <b>Firebase setup required</b>
+          <div class="small muted" style="margin-top:5px">
+            Paste your Firebase Web App config into <code>firebaseConfig</code> in this file,
+            then enable Google and Email/Password in Firebase Authentication.
+          </div>
+        </div>`:""}
+
+      <form onsubmit="emailAuth(event)">
+        ${signup?`<label>Name</label><input id="name" required maxlength="80" placeholder="Your name">`:""}
+        <label>Email address</label>
+        <input id="email" type="email" required autocomplete="email" placeholder="you@example.com">
+
+        <label>Password</label>
+        <input id="pass" type="password" required minlength="6"
+               autocomplete="${signup?"new-password":"current-password"}" placeholder="••••••••">
+
+        ${!signup?`
+          <div style="display:flex;justify-content:flex-end;margin-top:8px">
+            <button type="button" class="btn" onclick="resetPass()">Forgot password?</button>
+          </div>`:""}
+
+        <button class="primary" style="width:100%;margin-top:18px" ${!configured||S.busy?"disabled":""}>
+          ${S.busy?"Please wait…":signup?"Create account":"Log in"}
+        </button>
+      </form>
+
+      <div class="divider">or continue with</div>
+
+      <button class="btn" style="width:100%" onclick="googleLogin()" ${!configured||S.busy?"disabled":""}>
+        ◉ Continue with Google
+      </button>
+
+      <p style="text-align:center;margin-top:18px">
+        ${signup?"Already have an account?":"New to Vidzora?"}
+        <button class="btn" onclick="S.authMode=S.authMode==='login'?'signup':'login';render()">
+          ${signup?"Log in":"Create an account"}
+        </button>
+      </p>
+
+      <div class="notice small muted">
+        ${signup?
+          "Your account is created in Firebase and you are signed in automatically.":
+          "Google sign-in opens the real Google account chooser. Email login uses Firebase Authentication."}
       </div>
+    </div>
+  </div>`;
+}
+
+async function emailAuth(e){
+  e.preventDefault();
+  if(!auth)return alert("First configure Firebase in the code.");
+  S.busy=true;render();
+
+  const email=document.getElementById("email").value.trim().toLowerCase();
+  const password=document.getElementById("pass").value;
+
+  try{
+    if(S.authMode==="signup"){
+      const name=document.getElementById("name").value.trim();
+      const cred=await createUserWithEmailAndPassword(auth,email,password);
+      if(name) await updateProfile(cred.user,{displayName:name});
+    }else{
+      await signInWithEmailAndPassword(auth,email,password);
+    }
+  }catch(err){
+    showAuthError(err);
+    S.busy=false;render();
+  }
+}
+
+async function googleLogin(){
+  if(!auth)return alert("First configure Firebase in the code.");
+  S.busy=true;render();
+
+  try{
+    const provider=new GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+
+    // Redirect is preferred on phones; popup is convenient on desktop.
+    const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if(mobile){
+      await signInWithRedirect(auth,provider);
+    }else{
+      await signInWithPopup(auth,provider);
+    }
+  }catch(err){
+    S.busy=false;
+    showAuthError(err);
+    render();
+  }
+}
+
+async function resetPass(){
+  if(!auth)return alert("First configure Firebase in the code.");
+  const email=document.getElementById("email")?.value.trim().toLowerCase();
+  if(!email)return alert("Enter your email address first.");
+
+  try{
+    await sendPasswordResetEmail(auth,email);
+    alert("Password reset email sent. Check your Gmail inbox/spam folder.");
+  }catch(err){showAuthError(err)}
+}
+
+/* ===================== MAIN APP ===================== */
+function nav(id,label){
+  return `<button class="nav ${S.page===id?"active":""}" onclick="go('${id}')">${label}</button>`;
+}
+
+function app(){
+  document.getElementById("app").innerHTML=`
+  <header class="top">
+    <button class="btn round" onclick="document.querySelector('aside').classList.toggle('open')">☰</button>
+    <b class="logo">◢ Vidzora <span>AI</span></b>
+    <div class="sp"></div>
+    <button class="btn round" onclick="theme()">${S.theme==="dark"?"☀":"☾"}</button>
+    <button class="primary hideMob" onclick="go('studio')">Open Studio</button>
+  </header>
+
+  <div class="layout">
+    <aside>
       <div class="card">
-        <label>Prompt</label><textarea id="prompt" placeholder="Describe the video you want to create..."></textarea>
-        <div class="grid2">
-          <div><label>Duration</label><select id="duration"><option>8 seconds</option><option>15 seconds</option><option>20 seconds</option><option>30 seconds</option><option>1 minute</option><option>5 minutes</option><option>15 minutes</option><option>30 minutes</option></select></div>
-          <div><label>Aspect ratio</label><select id="ratio"><option>16:9 — YouTube landscape</option><option>9:16 — Shorts / Reels / TikTok</option><option>1:1 — Square</option><option>4:5 — Social portrait</option><option>4:3 — Classic</option><option>21:9 — Cinematic</option></select></div>
-          <div><label>Quality</label><select id="quality"><option>720p</option><option>1080p</option><option>4K</option></select></div>
-          <div><label>Style</label><select id="style"><option>Cinematic</option><option>Realistic</option><option>Anime</option><option>3D Animation</option><option>Fantasy</option><option>Documentary</option></select></div>
-        </div>
-        <label>Reference images (maximum 10)</label>
-        <input id="refs" type="file" accept="image/*" multiple onchange="showRefs(this)">
-        <div id="refList" class="refs"></div>
-        <div class="grid2">
-          <div><label>Character voice</label><select id="voice"><option>None</option><option>Warm male</option><option>Warm female</option><option>Deep cinematic</option><option>Custom voice</option></select></div>
-          <div><label>Voice-over file</label><input type="file" accept="audio/*"></div>
-        </div>
-        <label>Background music</label><select id="music"><option>None</option><option>Cinematic</option><option>Ambient</option><option>Upbeat</option><option>Epic</option></select>
-        <button class="primary" style="width:100%;margin-top:18px" onclick="startRender()">🎬 Generate & Render</button>
-        <div id="render" class="render card">
-          <div class="renderHead"><b id="renderStatus">Queued</b><b id="percent">0%</b></div>
-          <div class="progress" style="margin-top:10px"><i id="renderBar"></i></div>
-          <p id="renderText" class="small">Preparing your render…</p>
-          <div id="renderActions" class="actions" style="display:none">
-            <button class="outline" onclick="previewRender()">▶ View</button>
-            <button class="outline" onclick="downloadDemo()">↓ Download</button>
-            <button class="outline" onclick="shareDemo()">↗ Share</button>
-            <button class="outline" onclick="deleteRender()">× Delete</button>
+        <small class="muted">${owner()?"OWNER MODE":"PLAN"}</small>
+        <h3>${owner()?"Unlimited":S.user.plan}</h3>
+        <div class="progress"><i style="width:${owner()?100:70}%"></i></div>
+      </div>
+
+      <div class="title">WORKSPACE</div>
+      ${nav("overview","◆ Overview")}
+      ${nav("studio","✎ Studio")}
+      ${nav("gallery","▤ My Gallery")}
+
+      <div class="title">ACCOUNT</div>
+      ${nav("subscription","Rs Subscription")}
+      ${nav("renew","＋ Renew / Upgrade")}
+      ${nav("support","? Support")}
+      ${nav("settings","⚙ Settings")}
+      ${owner()?nav("owner","♛ Owner Console"):""}
+
+      <div class="profile">
+        <div class="row">
+          <div class="avatar">${esc((S.user.name||"V")[0].toUpperCase())}</div>
+          <div>
+            <b>${esc(S.user.name||"User")}</b>
+            <div class="small muted">${esc(S.user.email)}</div>
           </div>
         </div>
+        <button class="btn" style="width:100%;margin-top:10px" onclick="logout()">⇥ Sign out</button>
       </div>
-    </section>
+    </aside>
 
-    <section id="gallery" class="page"><h1>My Gallery</h1><p class="sub">Your generated videos, images and audio.</p><div id="gallery" class="gallery"></div></section>
-
-    <section id="subscription" class="page"><h1>Subscription</h1><p class="sub">Plans and usage allowances.</p><div class="grid">
-      <div class="plan"><h3>Weekly Pro</h3><div class="price">Rs 450</div><p>USD equivalent can be configured by owner.</p><div class="check">✓ 8s: 50 videos</div><div class="check">✓ 15s: 30 videos</div><div class="check">✓ 200 AI images</div><div class="check">✓ 20 voice overs</div><div class="check">✓ 20 music generations</div><button class="primary" style="width:100%" onclick="pay('Weekly Pro')">Choose plan</button></div>
-      <div class="plan"><h3>Monthly Pro</h3><div class="price">Rs 2,500</div><div class="check">✓ 8s: 100 videos</div><div class="check">✓ 15s: 30 videos</div><div class="check">✓ 30s: 50 videos</div><div class="check">✓ 1m: 10 videos</div><div class="check">✓ 200 images</div><div class="check">✓ Voice + music allowances</div><button class="primary" style="width:100%" onclick="pay('Monthly Pro')">Choose plan</button></div>
-      <div class="plan"><h3>Yearly Pro</h3><div class="price">Rs 14,000</div><div class="check">✓ 8s: 1,000 videos</div><div class="check">✓ 15s: 500 videos</div><div class="check">✓ 30s: 1,000 videos</div><div class="check">✓ 1m: 200 videos</div><div class="check">✓ 5m: 30 videos</div><div class="check">✓ 30m: 10 videos</div><div class="check">✓ 202+ images • unlimited voice/music (configure)</div><button class="primary" style="width:100%" onclick="pay('Yearly Pro')">Choose plan</button></div>
-    </div></section>
-
-    <section id="upgrade" class="page"><h1>Renew / Upgrade</h1><p class="sub">Select a payment method for a configured plan.</p><div class="card"><label>Plan</label><select id="payPlan"><option>Weekly Pro — Rs 450</option><option>Monthly Pro — Rs 2,500</option><option>Yearly Pro — Rs 14,000</option></select><label>Payment method</label><select id="payMethod"><option>JazzCash</option><option>EasyPaisa</option><option>Visa</option><option>Mastercard</option><option>QR Code</option></select><button class="primary" onclick="pay(document.getElementById('payPlan').value)">Continue to secure payment</button><p class="small">This front-end demo does not collect or process real card/payment details.</p></div></section>
-
-    <section id="support" class="page"><h1>Support</h1><p class="sub">Contact your Vidzora support team.</p><div class="grid2"><div class="card"><h3>Help Center</h3><p>For account, rendering and subscription questions.</p><button class="primary" onclick="support()">Contact support</button></div><div class="card"><h3>Support email</h3><p id="supportEmail">support@vidzora.ai</p><button class="outline" onclick="copyText('support@vidzora.ai')">Copy email</button></div></div></section>
-
-    <section id="settings" class="page"><h1>Settings</h1><p class="sub">Manage your profile and account.</p><div class="card"><div class="grid2"><div><label>Name</label><input id="setName" value="Vidzora Owner"></div><div><label>Email</label><input id="setEmail" value="owner@vidzora.ai" type="email"></div><div><label>New password</label><input id="setPass" type="password"></div><div><label>Theme</label><button class="outline" onclick="toggleTheme()">☼ Toggle dark / light</button></div></div><button class="primary" onclick="saveSettings()">Save profile</button><button class="outline" style="margin-left:8px" onclick="logout()">Sign out</button></div>
-      <div class="card" style="margin-top:16px"><h3>Owner controls</h3><p class="small">Owner mode is intended for the site owner. Change the owner email in the code before publishing. Real security must be enforced by a server/backend, not by this HTML file.</p><label>Owner email</label><input id="ownerEmail" value="owner@vidzora.ai"><button class="outline" onclick="saveOwner()">Save owner setting</button></div>
-    </section>
-  </div>
-</main>
-<div class="mobilebar"><button onclick="showPage('overview')">◆<br>Home</button><button onclick="showPage('studio')">✎<br>Studio</button><button onclick="showPage('gallery')">▤<br>Gallery</button><button onclick="showPage('subscription')">Rs<br>Plans</button><button onclick="showPage('settings')">⚙<br>Settings</button></div>
-</section>
-
-<div id="modal" class="modal"><div class="modalbox"><div style="display:flex;justify-content:space-between"><h2 id="modalTitle">Vidzora</h2><button class="iconbtn" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
-<div id="toast" class="toast"></div>
-
-<script>
-const $=id=>document.getElementById(id);
-let isSignup=false, currentRender=null, renderTimer=null;
-const OWNER_EMAIL=localStorage.getItem('vidzoraOwner')||'owner@vidzora.ai';
-
-function toggleTheme(){document.body.classList.toggle('light');localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark')}
-if(localStorage.getItem('theme')==='light')document.body.classList.add('light');
-
-function signup(){isSignup=true;$('authTitle').textContent='Welcome to Vidzora';document.querySelector('#authForm button.primary').textContent='Create account'}
-function forgot(){toast('Password reset flow: connect your email/auth backend here.')}
-function googleDemo(){login('Google User','google-demo@vidzora.ai')}
-$('authForm').addEventListener('submit',e=>{e.preventDefault();login(isSignup?'Vidzora User':'Vidzora Owner',$('authEmail').value)})
-function login(name,email){localStorage.setItem('logged','1');localStorage.setItem('name',name);localStorage.setItem('email',email);loadUser();$('auth').style.display='none';$('app').classList.add('active');showPage('studio')}
-function loadUser(){let n=localStorage.getItem('name')||'Vidzora Owner',e=localStorage.getItem('email')||'owner@vidzora.ai';$('sideName').textContent=n;$('sideEmail').textContent=e;$('sideAvatar').textContent=(n[0]||'V').toUpperCase();$('setName').value=n;$('setEmail').value=e}
-function logout(){localStorage.removeItem('logged');$('app').classList.remove('active');$('auth').style.display='grid'}
-if(localStorage.getItem('logged')==='1'){loadUser();$('auth').style.display='none';$('app').classList.add('active')}
-
-function showPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');$('pageTitle').textContent=id==='upgrade'?'Renew / Upgrade':id.charAt(0).toUpperCase()+id.slice(1);if(id==='gallery')renderGallery()}
-function toggleSidebar(){document.querySelector('.sidebar').style.display=document.querySelector('.sidebar').style.display==='none'?'block':'none'}
-function tool(t){toast(t==='text'?'Text-to-video selected':t+' tool selected')}
-function showRefs(input){if(input.files.length>10){toast('Maximum 10 reference images.');input.value='';return}$('refList').innerHTML='';[...input.files].forEach((f,i)=>{let x=document.createElement('div');x.className='ref';x.textContent='🖼️ '+f.name;x.dataset.i=i;$('refList').appendChild(x)})}
-function startRender(){
-  if(!$('prompt').value.trim()){toast('Please enter a prompt first.');return}
-  $('render').classList.add('show');$('renderActions').style.display='none';$('renderStatus').textContent='Queued';$('renderText').textContent='Preparing your render…';$('renderBar').style.width='0%';$('percent').textContent='0%';
-  let p=0;clearInterval(renderTimer);renderTimer=setInterval(()=>{p+=Math.floor(Math.random()*9)+3;if(p>=100){p=100;clearInterval(renderTimer);finishRender()}$('renderBar').style.width=p+'%';$('percent').textContent=p+'%';$('renderStatus').textContent=p<25?'Queued':p<100?'Rendering':'Complete';$('renderText').textContent=p<100?'Rendering your video…':'Render complete.'},500)
+    <main class="main"><div class="page">${page()}</div></main>
+  </div>`;
 }
-function finish
+
+function page(){
+  if(S.page==="studio")return studio();
+  if(S.page==="gallery")return gallery();
+  if(S.page==="subscription"||S.page==="renew")return subscription();
+  if(S.page==="support")return support();
+  if(S.page==="settings")return settings();
+  if(S.page==="owner")return ownerPage();
+  return overview();
+}
+
+function overview(){
+  const p=plan();
+  return `
+  <div class="head">
+    <div><h1>Welcome, ${esc(S.user.name||"Creator")}.</h1><p class="muted">Your Vidzora AI workspace.</p></div>
+    <button class="primary" onclick="go('studio')">＋ Create project</button>
+  </div>
+  <div class="grid g4">
+    ${stat("Plan",owner()?"Owner Unlimited":S.user.plan)}
+    ${stat("8s videos",owner()?"∞":used("v8")+" / "+q(p.q.v8))}
+    ${stat("15s videos",owner()?"∞":used("v15")+" / "+q(p.q.v15))}
+    ${stat("AI images",owner()?"∞":used("img")+" / "+q(p.q.img))}
+  </div>
+  <div class="grid g2" style="margin-top:15px">
+    <div class="card"><h2>Start creating</h2><p class="muted">Video, image, voiceover, music and thumbnail tools.</p><button class="primary" onclick="go('studio')">Open Studio</button></div>
+    <div class="card"><h2>Gallery</h2><p>${S.media.length} project(s)</p><button class="btn" onclick="go('gallery')">View Gallery</button></div>
+  </div>`;
+}
+function stat(a,b){return `<div class="card"><small class="muted">${a}</small><div class="stat">${b}</div></div>`}
+
+/* ===================== STUDIO ===================== */
+function studio(){
+  return `
+  <div class="head"><div><h1>Studio</h1><p class="muted">Create and render projects.</p></div></div>
+
+  <div class="tabs">
+    ${modes.map(m=>`<button class="btn tab ${S.mode===m[1]?"on":""}" onclick="S.mode='${m[1]}';render()">${m[0]}</button>`).join("")}
+  </div>
+
+  <div class="studio">
+    <div class="card">
+      <form onsubmit="generate(event)">
+        <label>Prompt</label>
+        <textarea id="prompt" placeholder="Describe your video or asset..."></textarea>
+
+        ${["video","imgprompt","imgvideo","story"].includes(S.mode)?`
+          <div class="grid g2">
+            <div><label>Duration</label><select id="dur">${durations.map(x=>`<option value="${x[1]}">${x[0]}</option>`).join("")}</select></div>
+            <div><label>Aspect ratio</label><select id="ratio">${ratios.map(x=>`<option>${x}</option>`).join("")}</select></div>
+          </div>
+          <div class="grid g2">
+            <div><label>Quality</label><select id="quality"><option>720p</option><option>1080p</option><option>4K</option></select></div>
+            <div><label>Voiceover</label><select id="voice"><option>None</option><option>Character voice</option><option>Upload my voice</option></select></div>
+          </div>
+          <label>Reference images — maximum 10</label>
+          <input type="file" accept="image/*" multiple onchange="refs(this.files)">
+          <div class="refs">
+            ${S.refs.map((r,i)=>`<div class="ref"><img src="${r}"><button type="button" onclick="S.refs.splice(${i},1);render()">×</button></div>`).join("")}
+          </div>
+          <button type="button" class="btn" style="margin-top:8px" onclick="S.refs=[];render()">Replace all references</button>
+        `:`<label>Reference image / file</label><input type="file" accept="image/*,audio/*">`}
+
+        <button class="primary" style="width:100%;margin-top:18px" ${S.busy?"disabled":""}>
+          ${S.busy?"Rendering…":"Start generation"}
+        </button>
+
+        <p class
