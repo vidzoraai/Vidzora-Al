@@ -1,23 +1,241 @@
- <!DOCTYPE html>   <html lang="en">  
-<head>  
- <meta charset="UTF-8">  
- <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title>Vidzora AI</title>  
- <style>  
- *{box-sizing:border-box}  
- body{margin:0;font-family:Arial;background:#080812;color:white}  
- }  
- header{padding:20px;text-align:center;font-size:28px;font-weight:bold;background:#111122}  
- .container{ max-width:900px;margin:40px auto;padding:20px}  
- h1{text-align:center;font-size:40px}  
- p{text-align:center;color:#aaa}  
- .box{background:#121222;padding:25px;border-radius:18px;margin-top:30px}  
- label{display:block;margin:15px 0 8px;font-weight:bold}  
- textarea,input,select{width:100%;padding:14px;border-radius:10px;border:1px solid #333;background:#080812;color:white;font-size:16px}  
- textarea{height:150px;resize:vertical}  
- button{width:100%;padding:16px;margin-top:20px;border:0;border-radius:10px;background:#6c4cff;color:white;font-size:18px;font-weight:bold;cursor:pointer}  
- #generator{display:none}  
- #message{text-align:center;margin-top:20px;color:#9d8cff}  
- </style>  
-</head>  
-<body><header>
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vidzora AI</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #080812;
+      color: white;
+    }
+
+    header {
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      background: #111122;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 40px;
+    }
+
+    p {
+      text-align: center;
+      color: #aaa;
+      line-height: 1.6;
+    }
+
+    .box {
+      background: #121222;
+      padding: 25px;
+      border-radius: 18px;
+      margin-top: 30px;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 8px;
+      font-weight: bold;
+    }
+
+    textarea,
+    input,
+    select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #080812;
+      color: white;
+      font-size: 16px;
+    }
+
+    textarea {
+      height: 150px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 20px;
+      border: 0;
+      border-radius: 10px;
+      background: #6c4cff;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #generator {
+      display: none;
+    }
+
+    #message {
+      text-align: center;
+      margin-top: 20px;
+      color: #9d8cff;
+    }
+
+    .back {
+      background: #29293d;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    🎬 Vidzora AI
+  </header>
+
+  <div class="container">
+
+    <!-- HOME PAGE -->
+    <div id="home">
+      <h1>Create Videos With AI</h1>
+
+      <p>
+        Turn your ideas and characters into amazing AI videos.
+      </p>
+
+      <div class="box">
+        <button onclick="openGenerator()">
+          🚀 Start Creating
+        </button>
+      </div>
+    </div>
+
+
+    <!-- VIDEO GENERATOR PAGE -->
+    <div id="generator">
+
+      <h1>🎥 AI Video Generator</h1>
+
+      <p>
+        Create your video prompt and choose your settings.
+      </p>
+
+      <div class="box">
+
+        <label for="prompt">
+          📝 Video Prompt
+        </label>
+
+        <textarea
+          id="prompt"
+          placeholder="Write your story or video idea here..."
+        ></textarea>
+
+
+        <label for="character">
+          🎭 Character Reference
+        </label>
+
+        <input
+          type="text"
+          id="character"
+          placeholder="Example: Roman, Daran, Colin"
+        >
+
+
+        <label for="duration">
+          ⏱️ Video Duration
+        </label>
+
+        <select id="duration">
+          <option>15 Seconds</option>
+          <option>30 Seconds</option>
+          <option>1 Minute</option>
+          <option>5 Minutes</option>
+          <option>10 Minutes</option>
+          <option>30 Minutes</option>
+        </select>
+
+
+        <label for="style">
+          🎨 Video Style
+        </label>
+
+        <select id="style">
+          <option>Cinematic</option>
+          <option>Realistic</option>
+          <option>Fantasy</option>
+          <option>Anime</option>
+          <option>3D Animation</option>
+        </select>
+
+
+        <button onclick="generateVideo()">
+          🎬 Generate Video
+        </button>
+
+        <button class="back" onclick="goHome()">
+          ← Back
+        </button>
+
+        <div id="message"></div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <script>
+    function openGenerator() {
+      document.getElementById("home").style.display = "none";
+      document.getElementById("generator").style.display = "block";
+    }
+
+    function goHome() {
+      document.getElementById("generator").style.display = "none";
+      document.getElementById("home").style.display = "block";
+      document.getElementById("message").innerText = "";
+    }
+
+    function generateVideo() {
+      const prompt = document.getElementById("prompt").value.trim();
+      const character = document.getElementById("character").value.trim();
+      const duration = document.getElementById("duration").value;
+      const style = document.getElementById("style").value;
+      const message = document.getElementById("message");
+
+      if (prompt === "") {
+        message.innerText = "⚠️ Please enter a video prompt first.";
+        return;
+      }
+
+      message.innerText =
+        "✅ Video request prepared! Duration: " +
+        duration +
+        " | Style: " +
+        style +
+        (character ? " | Character: " + character : "");
+    }
+  </script>
+
+</body>
+ </html>
